@@ -12,7 +12,7 @@ value_h = 128
 policy_h = 128
 value_lr = 1e-2
 policy_lr = 1e-3
-max_length = 1000
+max_length = 200
 epochs = 1000
 episodes_per_epoch = 10
 
