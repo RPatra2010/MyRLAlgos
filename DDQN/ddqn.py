@@ -69,30 +69,30 @@ class DQN:
                 if done:
                     break
 
-            loss = torch.tensor(0.0, dtype = torch.float32)
-            if len(replay_buffer) >= BATCH_SIZE:
-                #Randomly sample from the replay buffer
-                list = random.sample(replay_buffer, BATCH_SIZE)
-                observations = torch.stack([row[0] for row in list])
-                actions = torch.stack([row[1].long() for row in list])
-                rewards = torch.stack([row[2] for row in list])
-                dones = torch.stack([row[3] for row in list])
-                next_observations = torch.stack([row[4] for row in list])
+                loss = torch.tensor(0.0, dtype = torch.float32)
+                if len(replay_buffer) >= BATCH_SIZE:
+                    #Randomly sample from the replay buffer
+                    list = random.sample(replay_buffer, BATCH_SIZE)
+                    observations = torch.stack([row[0] for row in list])
+                    actions = torch.stack([row[1].long() for row in list])
+                    rewards = torch.stack([row[2] for row in list])
+                    dones = torch.stack([row[3] for row in list])
+                    next_observations = torch.stack([row[4] for row in list])
 
 
-                with torch.no_grad():
-                    target_qvals = rewards + gamma * self.target_q(next_observations).gather(1, torch.argmax(self.q(observations), dim = 1).view(-1, 1)).squeeze(-1)
-                optimizer.zero_grad()
-                qvals = self.q(observations).gather(1, actions.view(actions.size(0), 1))
-                loss = nn.MSELoss()(target_qvals, qvals)
-                loss.backward()
-                optimizer.step()
+                    with torch.no_grad():
+                        target_qvals = rewards + gamma * self.target_q(next_observations).gather(1, torch.argmax(self.q(observations), dim = 1).view(-1, 1)).squeeze(-1)
+                    optimizer.zero_grad()
+                    qvals = self.q(observations).gather(1, actions.view(actions.size(0), 1))
+                    loss = nn.MSELoss()(target_qvals, qvals)
+                    loss.backward()
+                    optimizer.step()
 
                         #Update using polyak averaging
-                with torch.no_grad():
-                    for p_target, p in zip(self.target_q.parameters(), self.q.parameters()):
-                        p_target.data.mul_(polyak_const)
-                        p_target.data.add_((1 - polyak_const) * p.data)
+                    with torch.no_grad():
+                        for p_target, p in zip(self.target_q.parameters(), self.q.parameters()):
+                            p_target.data.mul_(polyak_const)
+                            p_target.data.add_((1 - polyak_const) * p.data)
 
 
 
@@ -153,6 +153,6 @@ if __name__ == "__main__":
     env = bullet.racecarGymEnv.RacecarGymEnv(renders=False, isDiscrete=True)
 
     dqn_agent = DQN(env, 100)
-    dqn_agent.train(5000, plot_rewards = True)
+    dqn_agent.train(200, plot_rewards = True)
 
-    dqn_agent.eval(100, render = False)
+    dqn_agent.eval(10, render = True)
