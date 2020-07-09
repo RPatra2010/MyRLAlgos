@@ -1,5 +1,6 @@
 #Double Deep Q network in pytorch
 
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -84,11 +85,11 @@ class DQN:
                         target_qvals = rewards + gamma * self.target_q(next_observations).gather(1, torch.argmax(self.q(observations), dim = 1).view(-1, 1)).squeeze(-1)
                     optimizer.zero_grad()
                     qvals = self.q(observations).gather(1, actions.view(actions.size(0), 1))
-                    loss = nn.MSELoss()(target_qvals, qvals)
+                    loss = nn.MSELoss()(target_qvals, qvals.view(-1,1))
                     loss.backward()
                     optimizer.step()
 
-                        #Update using polyak averaging
+                    #Update using polyak averaging
                     with torch.no_grad():
                         for p_target, p in zip(self.target_q.parameters(), self.q.parameters()):
                             p_target.data.mul_(polyak_const)
@@ -108,11 +109,23 @@ class DQN:
             plt.plot(epoch_rewards)
             plt.show()
 
-    def save(self):
-        pass
+    def save(self, save_dir):
+        """
+        Saves the trained q and target q networks in the specified directory
+        """
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        torch.save(self.q.state_dict(), f"{save_dir}/q.pt")
+        torch.save(self.q.state_dict(), f"{save_dir}/target_q.pt")
+        print(f"Models saved at {save_dir}")
 
-    def load(self):
-        pass
+    def load(self, load_dir):
+        """
+        Loads the trained q and target q network from the specified directory
+        """
+        self.q.load_state_dict(torch.load(f"{load_dir}/q.pt"))
+        self.target_q.load_state_dict(torch.load(f"{load_dir}/target_q.pt"))
+        print(f"Models loaded from {load_dir}")
 
     def eval(self, episodes, render):
         """
@@ -153,6 +166,7 @@ if __name__ == "__main__":
     env = bullet.racecarGymEnv.RacecarGymEnv(renders=False, isDiscrete=True)
 
     dqn_agent = DQN(env, 100)
-    dqn_agent.train(200, plot_rewards = True)
-
+    dqn_agent.train(10, plot_rewards = True)
+    dqn_agent.save("./models")
+    dqn_agent.load("./models")
     dqn_agent.eval(10, render = True)
