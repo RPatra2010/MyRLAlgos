@@ -16,9 +16,9 @@ import copy
 LEARNING_RATE = 1e-3
 EPSILON = 0.05
 GAMMA = 0.99
-MAX_BUFFER_LENGTH = 500
+MAX_BUFFER_LENGTH = 5000
 POL_CONST = 0.995
-MAX_TRAJ_LENGTH = 1000
+MAX_TRAJ_LENGTH = 10000
 BATCH_SIZE = 8
 
 class DQN:
@@ -159,14 +159,13 @@ class DQN:
 
 
 if __name__ == "__main__":
-    #import gym
-    #env = gym.make("CartPole-v0")
-    from pybullet_envs import bullet
+    import gym
+    env = gym.make("CartPole-v0")
+    #from pybullet_envs import bullet
 
-    env = bullet.racecarGymEnv.RacecarGymEnv(renders=False, isDiscrete=True)
-
-    dqn_agent = DQN(env, 100)
-    dqn_agent.train(10, plot_rewards = True)
-    dqn_agent.save("./models")
-    dqn_agent.load("./models")
+    #env = bullet.racecarGymEnv.RacecarGymEnv(renders=False, isDiscrete=True)
+    dqn_agent = DQN(env, 500)
+    dqn_agent.train(3000, plot_rewards = True)
+    #dqn_agent.save("./DDQN/models")
+    #dqn_agent.load("./DDQN/models")
     dqn_agent.eval(10, render = True)
